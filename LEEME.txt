@@ -1,0 +1,27 @@
+CONTADOR DE COMENSALES - VERSION INSTALABLE (PWA)
+
+CONTENIDO (subir TODA la carpeta "contador" a tu repositorio de GitHub Pages):
+  index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png
+  libs/ (librerias de Excel y PDF, incluidas para que funcione sin internet)
+
+PASOS
+1. En tu repositorio de GitHub: Add file > Upload files. Arrastra la carpeta "contador" completa
+   (no la mezcles con los archivos de tu otra app) y confirma con Commit changes.
+2. Espera 1 a 2 minutos. La app quedara en:
+   https://TU-USUARIO.github.io/TU-REPOSITORIO/contador/
+3. Abrela UNA VEZ en la tablet con internet (esto deja la app guardada en la tablet).
+4. Instalala: Chrome (Android) menu de tres puntos > "Instalar app" o "Agregar a la pantalla de inicio".
+   Safari (iPad) boton Compartir > "Agregar a pantalla de inicio".
+5. Desde ese momento abre con el icono, sin sesion de claude.ai y sin internet.
+
+USO DEL SUPERVISOR
+- Mantener presionado 2 segundos el titulo "Casino - Turno almuerzo" abre el panel:
+  Deshacer ultimo, Cerrar turno, Respaldo del turno (.json), Restaurar respaldo.
+- Los datos se guardan en la tablet en cada toque.
+- "Iniciar nuevo turno" archiva el turno anterior en la tablet antes de borrarlo.
+
+IMPORTANTE
+- No borrar los datos del navegador ni desinstalar la app durante el turno.
+- Descargar el respaldo (.json) al cerrar cada turno y guardarlo fuera de la tablet.
+- Para actualizar la app: reemplazar los archivos en GitHub; la tablet toma la version nueva
+  la siguiente vez que se abre con internet (cerrar y abrir la app dos veces).
