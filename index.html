@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Contador de comensales</title>
 <meta name="theme-color" content="#0f2747">
 <meta name="mobile-web-app-capable" content="yes">
@@ -75,6 +75,29 @@ h3{margin:18px 0 8px;font-size:17px}
 .act{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center;z-index:20}
 .toast.on{opacity:1}
+html,body{overscroll-behavior:none}
+body.k{overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+body.k .tabs{display:none}
+body.k .wrap{max-width:none;padding:8px;height:100dvh;display:flex;flex-direction:column}
+body.k #v1{flex:1;min-height:0;display:flex;flex-direction:column;padding:10px}
+body.k .top{padding:8px 14px}
+body.k .top h1{font-size:clamp(18px,3.4vh,30px)}
+body.k .top small{font-size:clamp(11px,1.8vh,14px)}
+body.k .clock{font-size:clamp(20px,4vh,30px)}
+body.k .total b{font-size:clamp(30px,6.2vh,56px)}
+body.k .hint{margin:6px 2px;font-size:clamp(14px,2.4vh,20px)}
+body.k .grid{flex:1;min-height:0;grid-auto-rows:1fr;gap:8px}
+body.k .co{min-height:0;padding:4px}
+body.k .co .n{font-size:clamp(26px,8vh,72px)}
+body.k .co .nm{font-size:clamp(11px,1.9vh,18px);margin-top:2px}
+body.k .co .c{font-size:clamp(18px,3.6vh,34px);margin-top:2px}
+body.k .menus{height:clamp(70px,17vh,150px);margin-top:8px;gap:8px}
+body.k .mn{min-height:0;height:100%}
+body.k .mn .t{font-size:clamp(20px,4.6vh,44px)}
+body.k .mn img.e{height:calc(clamp(70px,17vh,150px) - 22px)}
+body.k .two{margin-top:8px}
+body.k .log{max-height:48px}
+.sup .card{max-height:85vh;overflow:auto}
 .hide{display:none}.ch{display:flex;align-items:flex-end;gap:6px;min-height:170px;overflow-x:auto;padding:8px 4px;border-bottom:1px solid var(--line)}.cb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:30px}.cb b{font-size:11px}.cb span{font-size:11px;color:var(--mut)}.cb .st{display:flex;flex-direction:column-reverse;width:22px;border-radius:4px 4px 0 0;overflow:hidden}.cb .st i{display:block}
 </style>
 </head>
@@ -100,7 +123,7 @@ h3{margin:18px 0 8px;font-size:17px}
 <div class="card"><b>Últimos registros</b><div class="log" id="log"><div>Sin registros todavía</div></div></div>
 </div>
 </section>
-<div class="sup hide" id="sup"><div class="card"><b>Panel de supervisor</b><div class="bar" style="margin-top:8px"><button class="b" id="undo">↩ Deshacer último</button><button class="b p" id="close">Cerrar turno</button><button class="b" id="resp">⬇ Respaldo del turno</button><button class="b" id="rest">⬆ Restaurar respaldo</button><input type="file" id="rfile" accept=".json,application/json" hidden><button class="b" id="diag">🔍 Diagnóstico</button><button class="b" id="prueba">Probar descarga</button><button class="b" id="supx">Ocultar panel</button></div><div class="meta" id="supm" style="margin:8px 0 0"></div></div></div>
+<div class="sup hide" id="sup"><div class="card"><b>Panel de supervisor</b><div class="bar" style="margin-top:8px"><button class="b" id="undo">↩ Deshacer último</button><button class="b p" id="close">Cerrar turno</button><button class="b" id="resp">⬇ Respaldo del turno</button><button class="b" id="rest">⬆ Restaurar respaldo</button><input type="file" id="rfile" accept=".json,application/json" hidden><button class="b" id="go2">📋 Reporte de cierre</button><button class="b" id="go3">📋 Reporte sin vale</button><button class="b" id="go4">📊 Dashboard histórico</button><button class="b" id="fsb">⛶ Pantalla completa</button><button class="b" id="diag">🔍 Diagnóstico</button><button class="b" id="prueba">Probar descarga</button><button class="b" id="supx">Ocultar panel</button></div><div class="meta" id="supm" style="margin:8px 0 0"></div></div></div>
 
 <section id="v2" class="card hide">
 <h2>Reporte de cierre de turno</h2>
@@ -168,7 +191,7 @@ function hoyISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMont
 function init(){cnt={};EMP.forEach(e=>{cnt[e.id]={1:0,2:0,3:0}});log=[];pc=pm=null;closeAt="";turnoF=hoyISO()}
 const ser=()=>({f:turnoF,closeAt,cnt,log:log.map(l=>({t:l.t,e:l.e.id,m:l.m.id}))});
 function hidr(o){cnt={};EMP.forEach(e=>{cnt[e.id]={};MEN.forEach(m=>{cnt[e.id][m.id]=+((o.cnt&&o.cnt[e.id]&&o.cnt[e.id][m.id])||0)})});log=(o.log||[]).map(l=>({t:l.t,e:EMP.find(x=>x.id===l.e),m:MEN.find(x=>x.id===l.m)})).filter(l=>l.e&&l.m);turnoF=o.f||hoyISO();closeAt=o.closeAt||"";pc=pm=null}
-function est(t){if(t)estT=t;$("est").textContent=estT+" · v3 · "+(navigator.onLine?"● En línea":"● Sin conexión")+(turnoF!==hoyISO()&&TOT()?" · ⚠ Turno de otra fecha: ciérralo e inicia uno nuevo":"")}
+function est(t){if(t)estT=t;$("est").textContent=estT+" · v4 · "+(navigator.onLine?"● En línea":"● Sin conexión")+(turnoF!==hoyISO()&&TOT()?" · ⚠ Turno de otra fecha: ciérralo e inicia uno nuevo":"")}
 function save(){try{localStorage.setItem("contador_v1",JSON.stringify(ser()));est("Guardado en la tablet ✓ "+hora())}catch(e){est("⚠ No se pudo guardar en la tablet")}}
 function hser(){const c=ser();return{f:c.f,closeAt:c.closeAt,cnt:c.cnt,lg:c.log.map(l=>l.t+"|"+l.e+"|"+l.m)}}
 function histAll(){try{return JSON.parse(localStorage.getItem("contador_hist")||"[]")}catch(e){return[]}}
@@ -218,6 +241,7 @@ $("close").onclick=()=>{
 function showTab(n){
  [1,2,3,4].forEach(i=>{$("v"+i).classList.toggle("hide",i!==n);$("t"+i).setAttribute("aria-selected",i===n)});
  if(n===2)rep();if(n===3)rep3();if(n===4){if(!h4i){h4i=1;mes(0)}else rep4()}
+ document.body.classList.toggle("k",n===1);window.scrollTo(0,0);
 }
 [1,2,3,4].forEach(i=>$("t"+i).onclick=()=>showTab(i));
 const kp=(a,b)=>`<div><b>${a}</b><span>${b}</span></div>`;
@@ -335,7 +359,7 @@ $("xls4").onclick=()=>excelPeriodo(HF,HT,"consumos-periodo"+(HF?"-"+HF:"")+(HT?"
 $("pdf4").onclick=pdfPeriodo;
 $("xlsm").onclick=()=>{const p=turnoF.split("-"),ult=String(new Date(+p[0],+p[1],0).getDate()).padStart(2,"0");return excelPeriodo(p[0]+"-"+p[1]+"-01",p[0]+"-"+p[1]+"-"+ult,"consumos-acumulado-"+p[0]+"-"+p[1]+".xlsx")};
 ["xls4","pdf4","xlsm"].forEach(id=>{const f=$(id).onclick;$(id).onclick=async()=>{try{if(!await asegurar())return;await f()}catch(e){toast("No se pudo generar el archivo: "+((e&&e.message)||e))}}});
-async function diag(){const L=["Versión v3"],ok=x=>x?"ok":"NO cargada";L.push("Excel (XLSX): "+ok(typeof XLSX!=="undefined"));L.push("PDF (jsPDF): "+ok(!!window.jspdf));L.push("PDF tablas: "+ok(!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable)));
+async function diag(){const L=["Versión v4"],ok=x=>x?"ok":"NO cargada";L.push("Excel (XLSX): "+ok(typeof XLSX!=="undefined"));L.push("PDF (jsPDF): "+ok(!!window.jspdf));L.push("PDF tablas: "+ok(!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable)));
  let sw="no disponible";try{const g=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();sw=g&&g.active?"activo":"no activo"}catch(e){}L.push("Funcionamiento sin internet (service worker): "+sw);
  let pe="?";try{if(navigator.storage&&navigator.storage.persisted)pe=(await navigator.storage.persisted())?"sí":"no"}catch(e){}L.push("Almacenamiento protegido: "+pe);L.push("Turnos guardados en historial: "+histAll().length);L.push("Dispositivo: "+(esIOS?"iPad/iPhone":/Android/.test(navigator.userAgent)?"Android":"Computador"));
  $("supm").innerHTML=L.join("<br>");rst()}
@@ -350,6 +374,15 @@ $("supx").onclick=hideSup;$("sup").addEventListener("click",()=>{if(!$("sup").cl
 const hd=$("hd");hd.addEventListener("pointerdown",()=>{lp=setTimeout(openSup,2000)});["pointerup","pointerleave","pointercancel"].forEach(ev=>hd.addEventListener(ev,()=>clearTimeout(lp)));hd.addEventListener("contextmenu",e=>e.preventDefault());
 build();upd();pend();
 setInterval(()=>{$("clock").textContent=hora()},1000);$("clock").textContent=hora();
+document.body.classList.add("k");
+[2,3,4].forEach(n=>$("go"+n).onclick=()=>{hideSup();showTab(n)});
+const pantallaCompleta=matchMedia("(display-mode: fullscreen)").matches;
+async function fs(){try{const d=document.documentElement;if(!document.fullscreenElement&&d.requestFullscreen)await d.requestFullscreen({navigationUI:"hide"})}catch(e){}try{if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock("landscape")}catch(e){}}
+$("fsb").onclick=()=>{fs();msg("Pantalla completa activada")};
+if(!pantallaCompleta)document.addEventListener("pointerdown",()=>{if(!document.fullscreenElement)fs()},{passive:true});
+document.addEventListener("contextmenu",e=>{if(document.body.classList.contains("k"))e.preventDefault()});
+document.addEventListener("gesturestart",e=>e.preventDefault());
+if(matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches){history.pushState({k:1},"");addEventListener("popstate",()=>{history.pushState({k:1},"");toast("Para salir usa el botón Inicio de la tablet")})}
 addEventListener("online",()=>est());addEventListener("offline",()=>est());est();
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 async function wl(){try{if(navigator.wakeLock)await navigator.wakeLock.request("screen")}catch(e){}}wl();
