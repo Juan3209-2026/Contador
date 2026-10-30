@@ -10,9 +10,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="libs/xlsx.full.min.js"></script>
-<script src="libs/jspdf.umd.min.js"></script>
-<script src="libs/jspdf.plugin.autotable.min.js"></script>
+<script src="xlsx.full.min.js"></script>
+<script src="jspdf.umd.min.js"></script>
+<script src="jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{--bg:#e9edf4;--surf:#fff;--ink:#14233d;--mut:#5d6c86;--navy:#0f2747;--navy2:#1b3d6d;--gold:#f2b600;--line:#d5dce8;--ok:#1d9a5a;--warn:#f3c330;--warnt:#3b2c00;--btn:#fff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -75,7 +75,7 @@ h3{margin:18px 0 8px;font-size:17px}
 .act{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center;z-index:20}
 .toast.on{opacity:1}
-.hide{display:none}
+.hide{display:none}.ch{display:flex;align-items:flex-end;gap:6px;min-height:170px;overflow-x:auto;padding:8px 4px;border-bottom:1px solid var(--line)}.cb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:30px}.cb b{font-size:11px}.cb span{font-size:11px;color:var(--mut)}.cb .st{display:flex;flex-direction:column-reverse;width:22px;border-radius:4px 4px 0 0;overflow:hidden}.cb .st i{display:block}
 </style>
 </head>
 <body>
@@ -84,6 +84,7 @@ h3{margin:18px 0 8px;font-size:17px}
 <button class="tab" role="tab" id="t1" aria-selected="true">1. Registro en tablet</button>
 <button class="tab" role="tab" id="t2" aria-selected="false">2. Reporte de cierre</button>
 <button class="tab" role="tab" id="t3" aria-selected="false">3. Reporte sin vale</button>
+<button class="tab" role="tab" id="t4" aria-selected="false">4. Dashboard histórico</button>
 </div>
 
 <section id="v1" class="card">
@@ -99,7 +100,7 @@ h3{margin:18px 0 8px;font-size:17px}
 <div class="card"><b>Últimos registros</b><div class="log" id="log"><div>Sin registros todavía</div></div></div>
 </div>
 </section>
-<div class="sup hide" id="sup"><div class="card"><b>Panel de supervisor</b><div class="bar" style="margin-top:8px"><button class="b" id="undo">↩ Deshacer último</button><button class="b p" id="close">Cerrar turno</button><button class="b" id="resp">⬇ Respaldo del turno</button><button class="b" id="rest">⬆ Restaurar respaldo</button><input type="file" id="rfile" accept=".json,application/json" hidden><button class="b" id="supx">Ocultar panel</button></div><div class="meta" id="supm" style="margin:8px 0 0"></div></div></div>
+<div class="sup hide" id="sup"><div class="card"><b>Panel de supervisor</b><div class="bar" style="margin-top:8px"><button class="b" id="undo">↩ Deshacer último</button><button class="b p" id="close">Cerrar turno</button><button class="b" id="resp">⬇ Respaldo del turno</button><button class="b" id="rest">⬆ Restaurar respaldo</button><input type="file" id="rfile" accept=".json,application/json" hidden><button class="b" id="diag">🔍 Diagnóstico</button><button class="b" id="prueba">Probar descarga</button><button class="b" id="supx">Ocultar panel</button></div><div class="meta" id="supm" style="margin:8px 0 0"></div></div></div>
 
 <section id="v2" class="card hide">
 <h2>Reporte de cierre de turno</h2>
@@ -110,7 +111,8 @@ h3{margin:18px 0 8px;font-size:17px}
 <tbody id="rows"></tbody><tfoot id="foot"></tfoot>
 </table></div>
 <div class="act">
-<button class="b g" id="xls">⬇ Descargar Excel (cierre completo)</button>
+<button class="b g" id="xls">⬇ Excel del turno</button>
+<button class="b g" id="xlsm">⬇ Excel acumulado del mes</button>
 <button class="b g" id="pdf">⬇ Descargar PDF</button>
 <button class="b" id="reset">Iniciar nuevo turno</button>
 </div>
@@ -132,6 +134,20 @@ h3{margin:18px 0 8px;font-size:17px}
 <button class="b g" id="pdf3">⬇ Descargar PDF sin vale</button>
 </div>
 </section>
+
+<section id="v4" class="card hide">
+<h2>Dashboard histórico</h2>
+<p class="meta" id="meta4"></p>
+<div class="bar" style="margin-bottom:12px"><label class="ty">Desde <input type="date" id="hf" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surf);color:var(--ink);font:inherit"></label><label class="ty">Hasta <input type="date" id="ht" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surf);color:var(--ink);font:inherit"></label><button class="b" id="hm">Mes actual</button><button class="b" id="hp">Mes anterior</button><button class="b" id="ha">Todo</button></div>
+<div class="kp" id="kp4"></div>
+<h3>Platos por día <span class="meta" style="font-size:13px">· <b style="color:#d4141c">■</b> Menú 1 <b style="color:#f5a800">■</b> Menú 2 <b style="color:#1b9a3a">■</b> Menú 3</span></h3>
+<div class="ch" id="ch4"></div>
+<h3>Consumo por empresa y tipo de menú</h3>
+<div class="tw"><table><thead><tr><th>N°</th><th>Empresa / categoría</th><th class="r">Menú 1</th><th class="r">Menú 2</th><th class="r">Menú 3</th><th class="r">Total platos</th><th class="r">% del total</th></tr></thead><tbody id="rows4"></tbody><tfoot id="foot4"></tfoot></table></div>
+<h3>Detalle por día</h3>
+<div class="tw"><table><thead><tr><th>Fecha</th><th>Estado</th><th class="r">Empresas</th><th class="r">Visitas</th><th class="r">Sin vale</th><th class="r">Menú 1</th><th class="r">Menú 2</th><th class="r">Menú 3</th><th class="r">Total</th></tr></thead><tbody id="dias4"></tbody><tfoot id="dfoot4"></tfoot></table></div>
+<div class="act"><button class="b g" id="xls4">⬇ Excel del período (acumulado)</button><button class="b g" id="pdf4">⬇ PDF del período</button></div>
+</section>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -152,9 +168,11 @@ function hoyISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMont
 function init(){cnt={};EMP.forEach(e=>{cnt[e.id]={1:0,2:0,3:0}});log=[];pc=pm=null;closeAt="";turnoF=hoyISO()}
 const ser=()=>({f:turnoF,closeAt,cnt,log:log.map(l=>({t:l.t,e:l.e.id,m:l.m.id}))});
 function hidr(o){cnt={};EMP.forEach(e=>{cnt[e.id]={};MEN.forEach(m=>{cnt[e.id][m.id]=+((o.cnt&&o.cnt[e.id]&&o.cnt[e.id][m.id])||0)})});log=(o.log||[]).map(l=>({t:l.t,e:EMP.find(x=>x.id===l.e),m:MEN.find(x=>x.id===l.m)})).filter(l=>l.e&&l.m);turnoF=o.f||hoyISO();closeAt=o.closeAt||"";pc=pm=null}
-function est(t){if(t)estT=t;$("est").textContent=estT+" · "+(navigator.onLine?"● En línea":"● Sin conexión")+(turnoF!==hoyISO()&&TOT()?" · ⚠ Turno de otra fecha: ciérralo e inicia uno nuevo":"")}
+function est(t){if(t)estT=t;$("est").textContent=estT+" · v3 · "+(navigator.onLine?"● En línea":"● Sin conexión")+(turnoF!==hoyISO()&&TOT()?" · ⚠ Turno de otra fecha: ciérralo e inicia uno nuevo":"")}
 function save(){try{localStorage.setItem("contador_v1",JSON.stringify(ser()));est("Guardado en la tablet ✓ "+hora())}catch(e){est("⚠ No se pudo guardar en la tablet")}}
-function archivar(){if(!TOT())return;try{const h=JSON.parse(localStorage.getItem("contador_hist")||"[]");h.push(ser());localStorage.setItem("contador_hist",JSON.stringify(h.slice(-60)))}catch(e){}}
+function hser(){const c=ser();return{f:c.f,closeAt:c.closeAt,cnt:c.cnt,lg:c.log.map(l=>l.t+"|"+l.e+"|"+l.m)}}
+function histAll(){try{return JSON.parse(localStorage.getItem("contador_hist")||"[]")}catch(e){return[]}}
+function archivar(){if(!TOT())return;let h=histAll().filter(t=>t.f!==turnoF);h.push(hser());h.sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);h=h.slice(-400);for(let i=0;i<=h.length;i++){try{localStorage.setItem("contador_hist",JSON.stringify(h));return}catch(e){if(i<h.length)delete h[i].lg}}}
 init();try{const o=JSON.parse(localStorage.getItem("contador_v1")||"null");if(o&&o.cnt)hidr(o)}catch(e){}
 const hora=()=>new Date().toLocaleTimeString("es-CL",{hour12:false});
 const fechaTxt=()=>new Date(turnoF+"T12:00:00").toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
@@ -195,13 +213,13 @@ $("undo").onclick=()=>{const l=log.pop();if(!l){msg("No hay registros para desha
 $("close").onclick=()=>{
  if(!TOT()){msg("Aún no hay platos registrados");return}
  if(!cc){cc=1;$("close").textContent="Confirmar cierre";ct=setTimeout(()=>{cc=0;$("close").textContent="Cerrar turno"},5000);return}
- clearTimeout(ct);cc=0;$("close").textContent="Cerrar turno";closeAt=hora();save();hideSup();showTab(2);
+ clearTimeout(ct);cc=0;$("close").textContent="Cerrar turno";closeAt=hora();save();archivar();hideSup();showTab(2);
 };
 function showTab(n){
- [1,2,3].forEach(i=>{$("v"+i).classList.toggle("hide",i!==n);$("t"+i).setAttribute("aria-selected",i===n)});
- if(n===2)rep();if(n===3)rep3();
+ [1,2,3,4].forEach(i=>{$("v"+i).classList.toggle("hide",i!==n);$("t"+i).setAttribute("aria-selected",i===n)});
+ if(n===2)rep();if(n===3)rep3();if(n===4){if(!h4i){h4i=1;mes(0)}else rep4()}
 }
-[1,2,3].forEach(i=>$("t"+i).onclick=()=>showTab(i));
+[1,2,3,4].forEach(i=>$("t"+i).onclick=()=>showTab(i));
 const kp=(a,b)=>`<div><b>${a}</b><span>${b}</span></div>`;
 function rep(){
  const T=TOT(),pc2=v=>T?(sum(v)*100/T).toFixed(1)+"%":"0.0%",td=v=>v.map(x=>`<td class="r">${x}</td>`).join("");
@@ -222,8 +240,25 @@ function rep3(){
  $("det3").innerHTML=d.map(l=>`<tr><td>${l.t}</td><td>${l.m.nm}</td></tr>`).join("")||'<tr><td colspan="2">Sin registros sin vale.</td></tr>';
 }
 function bajar(nombre,data,tipo){const b=data instanceof Blob?data:new Blob([data],{type:tipo||"application/octet-stream"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=nombre;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
-async function guardar(nombre,data){try{bajar(nombre,data);toast("Archivo listo ✓")}catch(e){toast("No se pudo descargar el archivo.")}}
-$("resp").onclick=()=>{let h=[];try{h=JSON.parse(localStorage.getItem("contador_hist")||"[]")}catch(e){}bajar("respaldo-contador-"+turnoF+"-"+hora().replace(/:/g,"")+".json",JSON.stringify({version:1,exportado:new Date().toISOString(),actual:ser(),historial:h},null,1),"application/json");msg("Respaldo descargado")};
+const esIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const MIME={xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",pdf:"application/pdf",json:"application/json"};
+function cargar(src){return new Promise((ok,ko)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+async function lib(ok,local,cdn){if(ok())return true;try{await cargar(local)}catch(e){}if(ok())return true;try{await cargar(cdn)}catch(e){}return ok()}
+async function asegurar(){
+ const a=await lib(()=>typeof XLSX!=="undefined","xlsx.full.min.js","https://cdnjs.cloudflare.com/ajax/xlsx/0.18.5/xlsx.full.min.js");
+ const b=await lib(()=>!!window.jspdf,"jspdf.umd.min.js","https://cdnjs.cloudflare.com/ajax/jspdf/2.5.1/jspdf.umd.min.js");
+ const c=b&&await lib(()=>!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable),"jspdf.plugin.autotable.min.js","https://cdnjs.cloudflare.com/ajax/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js");
+ if(!(a&&b&&c)){toast("No se pudieron cargar las librerías de Excel/PDF. Revisa que xlsx.full.min.js, jspdf.umd.min.js y jspdf.plugin.autotable.min.js estén subidos junto a index.html.");return false}return true}
+function enlace(nombre,blob){const u=URL.createObjectURL(blob),d=document.createElement("div");d.className="sup";d.style.zIndex=60;d.style.bottom="auto";d.style.top="calc(12px + env(safe-area-inset-top,0px))";
+ d.innerHTML='<div class="card"><b>Archivo listo</b><div class="meta" style="margin:6px 0 10px">Si no se descargó solo, toca el botón para guardarlo o abrirlo.</div><div class="bar"><a class="b p" style="text-decoration:none" target="_blank" rel="noopener"></a><button class="b">Cerrar</button></div></div>';
+ const a=d.querySelector("a");a.href=u;a.download=nombre;a.textContent="⬇ "+nombre;
+ const x=()=>{d.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)};d.querySelector("button").onclick=x;setTimeout(x,15000);document.body.appendChild(d)}
+async function guardar(nombre,data,tipo){
+ const ext=nombre.split(".").pop(),blob=data instanceof Blob?data:new Blob([data],{type:tipo||MIME[ext]||"application/octet-stream"});
+ if(esIOS&&navigator.canShare&&navigator.share){try{const f=new File([blob],nombre,{type:blob.type});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nombre});toast("Archivo compartido ✓");return}}catch(e){if(e&&e.name==="AbortError")return}}
+ if(!esIOS){try{bajar(nombre,blob)}catch(e){}}
+ enlace(nombre,blob);toast("Archivo generado ✓")}
+$("resp").onclick=()=>{let h=[];try{h=JSON.parse(localStorage.getItem("contador_hist")||"[]")}catch(e){}guardar("respaldo-contador-"+turnoF+"-"+hora().replace(/:/g,"")+".json",JSON.stringify({version:1,exportado:new Date().toISOString(),actual:ser(),historial:h},null,1),"application/json");msg("Respaldo descargado")};
 $("rest").onclick=()=>$("rfile").click();
 $("rfile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.actual||!o.actual.cnt)throw 0;if(!confirm("¿Reemplazar los datos actuales del turno por los del respaldo?"))return;hidr(o.actual);if(o.historial)localStorage.setItem("contador_hist",JSON.stringify(o.historial));build();upd();pend();msg("Respaldo restaurado")}catch(x){msg("El archivo no es un respaldo válido")}};r.readAsText(f);e.target.value=""};
 const HEAD=["N°","Empresa / categoría","Menú 1","Menú 2","Menú 3","Total platos"];
@@ -250,14 +285,62 @@ function pdf(titulo,head,body,foot,nombre,extra){
  try{const D=new jspdf.jsPDF();D.setFontSize(16);D.text(titulo,14,18);D.setFontSize(10);D.text(fechaTxt()+" · Turno almuerzo"+(closeAt?" · Cierre "+closeAt:""),14,25);
   let y=32;(extra||[]).forEach(t=>{D.text(t,14,y);y+=6});
   D.autoTable({startY:y+2,head:[head],body,foot:foot?[foot]:undefined,headStyles:{fillColor:[15,39,71]},footStyles:{fillColor:[242,182,0],textColor:[40,30,0]}});
-  guardar(nombre,D.output("arraybuffer"))}catch(e){toast("No se pudo generar el PDF")}
+  guardar(nombre,D.output("arraybuffer"))}catch(e){toast("No se pudo generar el PDF: "+((e&&e.message)||e))}
 }
 $("pdf").onclick=()=>{if(!TOT()){toast("No hay registros para exportar");return}
  const m=matriz(),mt=vsum(EMP);
- pdf("Cierre de turno – Casino",HEAD,m.slice(4,m.length-2).filter(r=>r.length),m[m.length-1],"cierre-turno-casino.pdf",["Total platos servidos: "+TOT()+"  |  Menú 1: "+mt[0]+"  Menú 2: "+mt[1]+"  Menú 3: "+mt[2]])};
+ pdf("Cierre de turno – Casino",HEAD,m.slice(4,m.length-2).filter(r=>r.length).map(r=>r.map(x=>x==="★"||x==="✹"?"":x)),m[m.length-1],"cierre-turno-casino.pdf",["Total platos servidos: "+TOT()+"  |  Menú 1: "+mt[0]+"  Menú 2: "+mt[1]+"  Menú 3: "+mt[2]])};
 $("pdf3").onclick=()=>{if(!TOT()){toast("No hay registros para exportar");return}
  const s=sinVale(),sv=log.filter(l=>l.e.id==="S").length;
  pdf("Reporte de comensales sin vale",["Tipo de menú","Sin vale","Con vale","Total"],s.slice(8,8+MEN.length),s[s.length-1],"reporte-sin-vale.pdf",["Comensales sin vale: "+sv+"  |  Vales recibidos: "+s[4][1]+"  |  Total platos: "+TOT()])};
+let HF="",HT="",h4i=0;
+const cn=(t,id,m)=>+((t.cnt&&t.cnt[id]&&t.cnt[id][m])||0),fmtF=f=>f.split("-").reverse().join("/"),isoD=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function logsOf(t){if(t.lg)return t.lg.map(x=>{const p=x.split("|");return{t:p[0],e:p[1],m:+p[2]}});return(t.log||[]).map(l=>({t:l.t,e:l.e,m:l.m}))}
+function turnos(){const h=histAll().filter(t=>t.f!==turnoF);if(TOT()){const c=hser();c.prov=!closeAt;h.push(c)}return h.sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0)}
+const periodo=(a,b)=>turnos().filter(t=>(!a||t.f>=a)&&(!b||t.f<=b));
+function agg(ts){const A={};EMP.forEach(e=>A[e.id]=[0,0,0]);ts.forEach(t=>EMP.forEach(e=>MEN.forEach((m,i)=>{A[e.id][i]+=cn(t,e.id,m.id)})));return A}
+const dsum=(A,ids)=>ids.reduce((a,id)=>add(a,A[id]),zero()),allIds=()=>EMP.map(e=>e.id),compIds=()=>COMP.map(e=>e.id);
+function diaRow(t){const v=id=>MEN.map(m=>cn(t,id,m.id)),c=COMP.reduce((a,e)=>add(a,v(e.id)),zero()),vi=v("V"),sv=v("S"),mt=add(add(c,vi),sv);return{f:t.f,est:t.closeAt?"Cerrado":"Provisorio",c:sum(c),v:sum(vi),s:sum(sv),m:mt,tot:sum(mt)}}
+const perTxt=(a,b)=>a||b?(a?fmtF(a):"inicio")+" al "+(b?fmtF(b):"hoy"):"Todo el historial";
+function mes(off){const n=new Date(),a=new Date(n.getFullYear(),n.getMonth()+off,1),b=new Date(n.getFullYear(),n.getMonth()+off+1,0);HF=isoD(a);HT=isoD(b);$("hf").value=HF;$("ht").value=HT;rep4()}
+$("hm").onclick=()=>mes(0);$("hp").onclick=()=>mes(-1);$("ha").onclick=()=>{HF=HT="";$("hf").value=$("ht").value="";rep4()};$("hf").onchange=()=>{HF=$("hf").value;rep4()};$("ht").onchange=()=>{HT=$("ht").value;rep4()};
+function rep4(){const ts=periodo(HF,HT),A=agg(ts),mt=dsum(A,allIds()),sc=dsum(A,compIds()),T=sum(mt),dr=ts.map(diaRow),td=v=>v.map(x=>`<td class="r">${x}</td>`).join("");
+ $("meta4").textContent=perTxt(HF,HT)+" · "+ts.length+" día"+(ts.length==1?"":"s")+" con registros"+(ts.some(t=>!t.closeAt)?" · incluye turnos sin cerrar (provisorios)":"");
+ $("kp4").innerHTML=kp(T,"Total platos")+kp(sum(sc),"Subtotal empresas")+kp(sum(A.V),"Visitas")+kp(sum(A.S),"Sin vale")+MEN.map((m,i)=>kp(mt[i],m.nm)).join("")+kp(ts.length?Math.round(T/ts.length):0,"Promedio por día");
+ const mx=Math.max(1,...dr.map(d=>d.tot));
+ $("ch4").innerHTML=dr.map(d=>`<div class="cb" title="${fmtF(d.f)}: ${d.tot} platos"><b>${d.tot}</b><div class="st">${d.m.map((x,i)=>`<i style="height:${Math.round(x*120/mx)}px;background:${MEN[i].tc}"></i>`).join("")}</div><span>${d.f.slice(8)}</span></div>`).join("")||'<div class="meta">Sin registros en el período.</div>';
+ const row=(a,b,v,cl,ac)=>`<tr class="${cl||""}"${ac?` style="--ac:${ac}"`:""}><td>${a}</td><td>${ac?'<span class="sw"></span>':""}${b}</td>${td(v)}<td class="r"><b>${sum(v)}</b></td><td class="r">${T?(sum(v)*100/T).toFixed(1):"0.0"}%</td></tr>`;
+ $("rows4").innerHTML=COMP.map(e=>row(e.n,e.nm,A[e.id],"",e.ac)).join("")+row("","SUBTOTAL EMPRESAS",sc,"sub")+row("★","Visitas",A.V,"",VIS.ac)+row("✹","Sin vale",A.S,"",SV.ac);
+ $("foot4").innerHTML=`<tr><td colspan="2">TOTAL GENERAL POR TIPO DE MENÚ</td>${td(mt)}<td class="r">${T}</td><td class="r">100%</td></tr>`;
+ $("dias4").innerHTML=dr.map(d=>`<tr><td>${fmtF(d.f)}</td><td>${d.est}</td><td class="r">${d.c}</td><td class="r">${d.v}</td><td class="r">${d.s}</td>${td(d.m)}<td class="r"><b>${d.tot}</b></td></tr>`).join("")||'<tr><td colspan="9">Sin registros en el período.</td></tr>';
+ const tt=dr.reduce((a,d)=>a.map((x,i)=>x+[d.c,d.v,d.s,d.m[0],d.m[1],d.m[2],d.tot][i]),[0,0,0,0,0,0,0]);
+ $("dfoot4").innerHTML=`<tr><td colspan="2">TOTAL</td>${td(tt)}</tr>`}
+function excelPeriodo(hf,ht,nombre){const ts=periodo(hf,ht);if(!ts.length){toast("No hay registros en el período");return}
+ const A=agg(ts),mt=dsum(A,allIds()),sc=dsum(A,compIds()),T=sum(mt),dr=ts.map(diaRow),r=(a,b,v)=>[a,b].concat(v,[sum(v)]);
+ const s1=[["Consumo del período – Casino (almuerzo)"],["Período: "+perTxt(hf,ht)],["Días con registro: "+ts.length+(ts.some(t=>!t.closeAt)?" (incluye turnos sin cerrar)":"")],[],HEAD];
+ COMP.forEach(e=>s1.push(r(e.n,e.nm,A[e.id])));s1.push(r("","SUBTOTAL EMPRESAS",sc),r("★","Visitas",A.V),r("✹","Sin vale",A.S),[],r("","TOTAL GENERAL POR TIPO DE MENÚ",mt));
+ const s2=[["Fecha","Estado","Platos empresas","Visitas","Sin vale","Menú 1","Menú 2","Menú 3","Total"]].concat(dr.map(d=>[fmtF(d.f),d.est,d.c,d.v,d.s].concat(d.m,[d.tot])));
+ s2.push(["TOTAL",""].concat(dr.reduce((a,d)=>a.map((x,i)=>x+[d.c,d.v,d.s,d.m[0],d.m[1],d.m[2],d.tot][i]),[0,0,0,0,0,0,0])));
+ const s3=[["Fecha"].concat(EMP.map(e=>e.nm),["Total"])].concat(ts.map(t=>[fmtF(t.f)].concat(EMP.map(e=>sum(MEN.map(m=>cn(t,e.id,m.id)))),[diaRow(t).tot])));
+ const s4=[["Fecha","Menú 1","Menú 2","Menú 3","Total sin vale"]].concat(ts.map(t=>{const v=MEN.map(m=>cn(t,"S",m.id));return[fmtF(t.f)].concat(v,[sum(v)])}));s4.push(["TOTAL"].concat(A.S,[sum(A.S)]));
+ const s5=[["Fecha","Hora","N°","Empresa / categoría","Menú"]];ts.forEach(t=>logsOf(t).forEach(l=>{const e=EMP.find(x=>x.id===String(l.e)),m=MEN.find(x=>x.id===+l.m);if(e&&m)s5.push([fmtF(t.f),l.t,e.n,e.nm,m.nm])}));
+ return guardar(nombre,libro([["Resumen período",s1],["Por día",s2],["Empresa por día",s3],["Sin vale por día",s4],["Detalle registros",s5]]))}
+function pdfPeriodo(){const ts=periodo(HF,HT);if(!ts.length){toast("No hay registros en el período");return}
+ const A=agg(ts),mt=dsum(A,allIds()),sc=dsum(A,compIds()),r=(a,b,v)=>[a,b].concat(v,[sum(v)]),dr=ts.map(diaRow),D=new jspdf.jsPDF();
+ D.setFontSize(16);D.text("Informe de consumos – Casino",14,18);D.setFontSize(10);D.text("Período: "+perTxt(HF,HT)+" · "+ts.length+" días con registro",14,25);
+ D.autoTable({startY:30,head:[HEAD],body:COMP.map(e=>r(e.n,e.nm,A[e.id])).concat([r("","SUBTOTAL EMPRESAS",sc),r("","Visitas",A.V),r("","Sin vale",A.S)]),foot:[r("","TOTAL POR TIPO DE MENÚ",mt)],headStyles:{fillColor:[15,39,71]},footStyles:{fillColor:[242,182,0],textColor:[40,30,0]}});
+ D.autoTable({startY:D.lastAutoTable.finalY+10,head:[["Fecha","Estado","Empresas","Visitas","Sin vale","Menú 1","Menú 2","Menú 3","Total"]],body:dr.map(d=>[fmtF(d.f),d.est,d.c,d.v,d.s].concat(d.m,[d.tot])),headStyles:{fillColor:[15,39,71]},styles:{fontSize:8}});
+ return guardar("informe-consumos-periodo.pdf",D.output("arraybuffer"))}
+$("xls4").onclick=()=>excelPeriodo(HF,HT,"consumos-periodo"+(HF?"-"+HF:"")+(HT?"-al-"+HT:"")+".xlsx");
+$("pdf4").onclick=pdfPeriodo;
+$("xlsm").onclick=()=>{const p=turnoF.split("-"),ult=String(new Date(+p[0],+p[1],0).getDate()).padStart(2,"0");return excelPeriodo(p[0]+"-"+p[1]+"-01",p[0]+"-"+p[1]+"-"+ult,"consumos-acumulado-"+p[0]+"-"+p[1]+".xlsx")};
+["xls4","pdf4","xlsm"].forEach(id=>{const f=$(id).onclick;$(id).onclick=async()=>{try{if(!await asegurar())return;await f()}catch(e){toast("No se pudo generar el archivo: "+((e&&e.message)||e))}}});
+async function diag(){const L=["Versión v3"],ok=x=>x?"ok":"NO cargada";L.push("Excel (XLSX): "+ok(typeof XLSX!=="undefined"));L.push("PDF (jsPDF): "+ok(!!window.jspdf));L.push("PDF tablas: "+ok(!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable)));
+ let sw="no disponible";try{const g=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();sw=g&&g.active?"activo":"no activo"}catch(e){}L.push("Funcionamiento sin internet (service worker): "+sw);
+ let pe="?";try{if(navigator.storage&&navigator.storage.persisted)pe=(await navigator.storage.persisted())?"sí":"no"}catch(e){}L.push("Almacenamiento protegido: "+pe);L.push("Turnos guardados en historial: "+histAll().length);L.push("Dispositivo: "+(esIOS?"iPad/iPhone":/Android/.test(navigator.userAgent)?"Android":"Computador"));
+ $("supm").innerHTML=L.join("<br>");rst()}
+$("diag").onclick=diag;$("prueba").onclick=()=>guardar("prueba-descarga.txt","Prueba de descarga OK "+new Date().toISOString(),"text/plain");
+["xls","xls3","pdf","pdf3"].forEach(id=>{const f=$(id).onclick;$(id).onclick=async()=>{try{if(!TOT()){toast("No hay registros para exportar");return}if(!await asegurar())return;await f()}catch(e){toast("No se pudo generar el archivo: "+((e&&e.message)||e))}}});
 let rc=0,rt=0;$("reset").onclick=()=>{if(!rc){rc=1;$("reset").textContent="Confirmar: borrar datos del turno";rt=setTimeout(()=>{rc=0;$("reset").textContent="Iniciar nuevo turno"},5000);return}clearTimeout(rt);rc=0;$("reset").textContent="Iniciar nuevo turno";archivar();init();build();upd();pend();showTab(1);toast("Nuevo turno iniciado")};
 const msg=m=>{if($("sup").classList.contains("hide"))toast(m);else{$("supm").textContent=m;rst()}};
 let st=0,lp=0;function rst(){clearTimeout(st);st=setTimeout(hideSup,20000)}
